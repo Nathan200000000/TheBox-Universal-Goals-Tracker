@@ -12,9 +12,12 @@ export const GOAL_TYPES: GoalTypeDefinition[] = [
   { id:'personal',label:'Personal',icon:'🏠',description:'A meaningful goal that does not fit another category.',unitPlaceholder:'steps' },
   { id:'custom',label:'Custom',icon:'🔢',description:'Define your own target and unit.',unitPlaceholder:'units' },
 ];
-export interface DebtDetails { originalBalance:number; interestRate:number; minimumPayment:number; monthlyPayment:number; dueDay?:number; }\nexport interface GoalMilestone { id:string; title:string; percent:number; reachedAt?:string;
+export interface DebtDetails { originalBalance:number; interestRate:number; minimumPayment:number; monthlyPayment:number; dueDay?:number; }
+export interface GoalMilestone { id:string; title:string; percent:number; reachedAt?:string;
   targetDate?:string; }
-\nexport interface GoalHistory { id:string; goalId:string; previous:number; current:number; change:number; note:string; createdAt:string; }\nexport interface Goal { id:string; name:string; type:GoalType; description:string; startDate:string; targetDate:string; target:number; current:number; unit:string; context:string; notes:string; status:GoalStatus;
+
+export interface GoalHistory { id:string; goalId:string; previous:number; current:number; change:number; note:string; createdAt:string; }
+export interface Goal { id:string; name:string; type:GoalType; description:string; startDate:string; targetDate:string; target:number; current:number; unit:string; context:string; notes:string; status:GoalStatus;
   completedAt?:string; createdAt:string; history:GoalHistory[]; milestones:GoalMilestone[]; debt?:DebtDetails; }
 export const calculateProgress = (goal:Pick<Goal,'current'|'target'>) => goal.target <= 0 ? 0 : Math.min(100,Math.max(0,(goal.current/goal.target)*100));
 
