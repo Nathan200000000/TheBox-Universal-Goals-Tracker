@@ -15,10 +15,11 @@ export const GOAL_TYPES:GoalTypeDefinition[]=[
 
 export interface DebtDetails{originalBalance:number;interestRate:number;minimumPayment:number;monthlyPayment:number;dueDay?:number}
 export interface RelocationTask{id:string;title:string;done:boolean}
+export interface WorkspaceNote{id:string;section:string;title:string;body:string;checklist:string[];pinned:boolean;createdAt:string;updatedAt:string}
 export interface RelocationDetails{destination:string;moveMethod:string;housingPlan:string;estimatedRent:number;movingCost:number;travelCost:number;depositCost:number;tasks:RelocationTask[]}
 export interface GoalMilestone{id:string;title:string;percent:number;reachedAt?:string;targetDate?:string}
 export interface GoalHistory{id:string;goalId:string;previous:number;current:number;change:number;note:string;createdAt:string}
-export interface Goal{id:string;name:string;type:GoalType;description:string;startDate:string;targetDate:string;target:number;current:number;unit:string;context:string;notes:string;status:GoalStatus;completedAt?:string;createdAt:string;history:GoalHistory[];milestones:GoalMilestone[];debt?:DebtDetails;relocation?:RelocationDetails}
+export interface Goal{id:string;name:string;type:GoalType;description:string;startDate:string;targetDate:string;target:number;current:number;unit:string;context:string;notes:string;status:GoalStatus;completedAt?:string;createdAt:string;history:GoalHistory[];milestones:GoalMilestone[];debt?:DebtDetails;relocation?:RelocationDetails;workspaceNotes?:WorkspaceNote[]}
 export const calculateProgress=(goal:Pick<Goal,'current'|'target'>):number=>goal.target<=0?0:Math.min(100,Math.max(0,(goal.current/goal.target)*100));
 export type GoalHealth='complete'|'on-track'|'at-risk'|'behind';
 export function getGoalHealth(goal:Pick<Goal,'current'|'target'|'startDate'|'targetDate'|'status'>):GoalHealth{if(goal.status==='completed'||goal.current>=goal.target)return'complete';const start=new Date(goal.startDate).getTime(),end=new Date(goal.targetDate).getTime(),elapsed=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start))),expected=elapsed*goal.target,ratio=expected<=0?1:goal.current/expected;if(ratio>=.9)return'on-track';if(ratio>=.6)return'at-risk';return'behind'}
