@@ -28,7 +28,7 @@ export function App() {
   const onTrack=active.filter(g=>calculateProgress(g)>=50).length;
   return <div className="app-shell">
     <aside className="sidebar"><div className="brand"><div className="brand-mark"><Target size={19} strokeWidth={2.5}/></div><div><div className="brand-name">TheBox</div><div className="brand-subtitle">Universal Goals</div></div></div>
-      <nav className="nav"><a className="nav-item active" href="#dashboard">Dashboard</a><a className="nav-item" href="#goals">All goals <span>{goals.length}</span></a><button className="nav-item nav-button" onClick={()=>setShowCalendar(true)}>Calendar</button><a className="nav-item" href="#wins">Wins</a></nav>
+      <nav className="nav"><a className="nav-item active" href="#dashboard">Dashboard</a><a className="nav-item" href="#goals">All goals <span>{goals.length}</span></a><button className="nav-item nav-button" onClick={()=>setShowCalendar(true)}>Calendar</button><button className="nav-item nav-button" onClick={()=>setShowRelocation(true)}>Relocation</button><a className="nav-item" href="#wins">Wins</a></nav>
       <div className="sidebar-footer"><div className="box-tip"><span className="tip-label">THE BOX TIP</span><p>Small progress still counts. TheBox is built to help you see it.</p></div><div className="profile"><div className="avatar">N</div><div><strong>My goals</strong><span>Personal workspace</span></div></div></div>
     </aside>
     <main className="main"><header className="topbar"><div><p className="eyebrow">YOUR PROGRESS</p><h1>Make progress. <em>Keep going.</em></h1></div><button className="primary-button" onClick={()=>setShowNewGoal(true)}><Plus size={18}/> New goal</button></header>
