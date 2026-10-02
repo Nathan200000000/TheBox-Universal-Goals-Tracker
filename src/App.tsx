@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { Target, Plus, ArrowUpRight, CircleCheck, Clock3, Flame, X, History, TrendingUp } from 'lucide-react';
+import { Target, Plus, ArrowUpRight, CircleCheck, Clock3, Flame, X, History, TrendingUp, MapPin, Check, DollarSign } from 'lucide-react';
 import { GOAL_TYPES, calculateProgress, getGoalHealth, getProjectedDate, getRequiredDailyPace, getMilestoneDate } from './goalModel';
-import type { Goal, GoalType } from './goalModel';
+import type { Goal, GoalType, RelocationTask } from './goalModel';
 
 const STORAGE_KEY = 'thebox.goals.v1';
 const makeMilestones=(startDate:string,targetDate:string,current:number,target:number)=>[25,50,75,100].map(percent=>({id:crypto.randomUUID(),title:percent+'% milestone',percent,targetDate:getMilestoneDate({startDate,targetDate},percent),reachedAt:calculateProgress({current,target})>=percent?'2026-01-01T00:00:00.000Z':undefined}));
