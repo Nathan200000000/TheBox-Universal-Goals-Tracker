@@ -1,102 +1,49 @@
-import { Target, Plus, ArrowUpRight, CircleCheck, Clock3, Flame } from 'lucide-react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { Target, Plus, ArrowUpRight, CircleCheck, Clock3, Flame, X } from 'lucide-react';
+import { GOAL_TYPES, Goal, GoalType, calculateProgress } from './goalModel';
 
-const sampleGoals = [
-  { name: 'Pay Off Capital One', type: 'Debt payoff', progress: 71, current: '$4,250', target: '$6,000', days: 456, status: 'On track' },
-  { name: 'Build Emergency Fund', type: 'Financial', progress: 64, current: '$3,200', target: '$5,000', days: 90, status: 'On track' },
-  { name: 'Learn Python', type: 'Learning', progress: 64, current: '64', target: '100', days: 151, status: 'On track' },
-  { name: 'Run 100 Miles', type: 'Fitness', progress: 42, current: '42', target: '100', days: 59, status: 'At risk' },
+const STORAGE_KEY = 'thebox.goals.v1';
+const initialGoals: Goal[] = [
+  { id:'capital-one',name:'Pay Off Capital One',type:'debt',description:'',startDate:'2026-01-01',targetDate:'2027-12-31',target:6000,current:4250,unit:'$',context:'Capital One',notes:'',status:'active',createdAt:'2026-01-01T00:00:00Z' },
+  { id:'emergency-fund',name:'Build Emergency Fund',type:'savings',description:'',startDate:'2026-01-01',targetDate:'2026-12-31',target:5000,current:3200,unit:'$',context:'',notes:'',status:'active',createdAt:'2026-01-01T00:00:00Z' },
+  { id:'python',name:'Learn Python',type:'learning',description:'',startDate:'2026-01-01',targetDate:'2027-03-01',target:100,current:64,unit:'lessons',context:'',notes:'',status:'active',createdAt:'2026-01-01T00:00:00Z' },
+  { id:'running',name:'Run 100 Miles',type:'fitness',description:'',startDate:'2026-01-01',targetDate:'2026-11-30',target:100,current:42,unit:'miles',context:'',notes:'',status:'active',createdAt:'2026-01-01T00:00:00Z' },
 ];
+const today = () => new Date().toISOString().slice(0,10);
 
 export function App() {
-  return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-mark"><Target size={19} strokeWidth={2.5} /></div>
-          <div>
-            <div className="brand-name">TheBox</div>
-            <div className="brand-subtitle">Universal Goals</div>
-          </div>
-        </div>
-
-        <nav className="nav">
-          <a className="nav-item active" href="#dashboard">Dashboard</a>
-          <a className="nav-item" href="#goals">All goals <span>4</span></a>
-          <a className="nav-item" href="#calendar">Calendar</a>
-          <a className="nav-item" href="#wins">Wins</a>
-        </nav>
-
-        <div className="sidebar-footer">
-          <div className="box-tip">
-            <span className="tip-label">THE BOX TIP</span>
-            <p>Small progress still counts. TheBox is built to help you see it.</p>
-          </div>
-          <div className="profile">
-            <div className="avatar">N</div>
-            <div><strong>My goals</strong><span>Personal workspace</span></div>
-          </div>
-        </div>
-      </aside>
-
-      <main className="main">
-        <header className="topbar">
-          <div>
-            <p className="eyebrow">YOUR PROGRESS</p>
-            <h1>Make progress. <em>Keep going.</em></h1>
-          </div>
-          <button className="primary-button"><Plus size={18} /> New goal</button>
-        </header>
-
-        <section className="stats">
-          <Stat icon={<Target />} label="Active goals" value="4" />
-          <Stat icon={<Flame />} label="On track" value="3" />
-          <Stat icon={<CircleCheck />} label="Completed" value="0" />
-          <Stat icon={<Clock3 />} label="Next deadline" value="59d" detail="Run 100 Miles" />
-        </section>
-
-        <section className="content-grid">
-          <div className="goals-panel">
-            <div className="section-heading">
-              <div><h2>Your goals</h2><p>Everything you're working toward.</p></div>
-              <a href="#goals">View all <ArrowUpRight size={15} /></a>
-            </div>
-            <div className="goal-list">
-              {sampleGoals.map((goal) => (
-                <article className="goal-card" key={goal.name}>
-                  <div className="goal-top">
-                    <div>
-                      <div className="goal-type">{goal.type}</div>
-                      <h3>{goal.name}</h3>
-                    </div>
-                    <span className={`status ${goal.status === 'At risk' ? 'risk' : ''}`}>{goal.status}</span>
-                  </div>
-                  <div className="progress-row"><strong>{goal.progress}%</strong><span>{goal.current} / {goal.target}</span></div>
-                  <div className="progress-track"><div style={{ width: `${goal.progress}%` }} /></div>
-                  <div className="goal-footer"><span>{goal.days} days remaining</span><span>Update progress →</span></div>
-                </article>
-              ))}
-            </div>
-          </div>
-
-          <aside className="momentum">
-            <div className="section-heading"><div><h2>Momentum</h2><p>Your recent movement.</p></div></div>
-            <div className="momentum-number">+12<span>%</span></div>
-            <p className="momentum-copy">overall progress this month</p>
-            <div className="activity"><div className="activity-dot" /><div><strong>Emergency Fund</strong><span>Added $300 · 2 days ago</span></div></div>
-            <div className="activity"><div className="activity-dot" /><div><strong>Learn Python</strong><span>Completed 8 lessons · 4 days ago</span></div></div>
-            <div className="activity"><div className="activity-dot" /><div><strong>Run 100 Miles</strong><span>Logged 5.2 miles · 6 days ago</span></div></div>
-          </aside>
-        </section>
-      </main>
-    </div>
-  );
+  const [goals,setGoals] = useState<Goal[]>(() => { const saved=localStorage.getItem(STORAGE_KEY); return saved ? JSON.parse(saved) : initialGoals; });
+  const [showNewGoal,setShowNewGoal] = useState(false);
+  useEffect(() => localStorage.setItem(STORAGE_KEY,JSON.stringify(goals)),[goals]);
+  const active=goals.filter(g=>g.status==='active'), completed=goals.filter(g=>g.status==='completed');
+  const nextGoal=[...active].sort((a,b)=>a.targetDate.localeCompare(b.targetDate))[0];
+  const onTrack=active.filter(g=>calculateProgress(g)>=50).length;
+  return <div className="app-shell">
+    <aside className="sidebar"><div className="brand"><div className="brand-mark"><Target size={19} strokeWidth={2.5}/></div><div><div className="brand-name">TheBox</div><div className="brand-subtitle">Universal Goals</div></div></div>
+      <nav className="nav"><a className="nav-item active" href="#dashboard">Dashboard</a><a className="nav-item" href="#goals">All goals <span>{goals.length}</span></a><a className="nav-item" href="#calendar">Calendar</a><a className="nav-item" href="#wins">Wins</a></nav>
+      <div className="sidebar-footer"><div className="box-tip"><span className="tip-label">THE BOX TIP</span><p>Small progress still counts. TheBox is built to help you see it.</p></div><div className="profile"><div className="avatar">N</div><div><strong>My goals</strong><span>Personal workspace</span></div></div></div>
+    </aside>
+    <main className="main"><header className="topbar"><div><p className="eyebrow">YOUR PROGRESS</p><h1>Make progress. <em>Keep going.</em></h1></div><button className="primary-button" onClick={()=>setShowNewGoal(true)}><Plus size={18}/> New goal</button></header>
+      <section className="stats"><Stat icon={<Target/>} label="Active goals" value={String(active.length)}/><Stat icon={<Flame/>} label="On track" value={String(onTrack)}/><Stat icon={<CircleCheck/>} label="Completed" value={String(completed.length)}/><Stat icon={<Clock3/>} label="Next deadline" value={nextGoal ? daysLeft(nextGoal.targetDate)+'d':'—'} detail={nextGoal?.name}/></section>
+      <section className="content-grid"><div className="goals-panel"><div className="section-heading"><div><h2>Your goals</h2><p>Everything you're working toward.</p></div><a href="#goals">View all <ArrowUpRight size={15}/></a></div><div className="goal-list">{goals.map(g=><GoalCard key={g.id} goal={g}/>)}</div></div>
+        <aside className="momentum"><div className="section-heading"><div><h2>Momentum</h2><p>Your recent movement.</p></div></div><div className="momentum-number">{Math.round(goals.reduce((s,g)=>s+calculateProgress(g),0)/Math.max(goals.length,1))}<span>%</span></div><p className="momentum-copy">average goal progress</p><div className="activity"><div className="activity-dot"/><div><strong>{goals.length} goals in TheBox</strong><span>Keep building your streak.</span></div></div><div className="activity"><div className="activity-dot"/><div><strong>{completed.length} completed</strong><span>Every finished goal becomes a win.</span></div></div></aside>
+      </section>
+    </main>
+    {showNewGoal && <NewGoalModal onClose={()=>setShowNewGoal(false)} onCreate={goal=>{setGoals(current=>[goal,...current]);setShowNewGoal(false);}}/>}
+  </div>;
 }
-
-function Stat({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: string; detail?: string }) {
-  return (
-    <div className="stat-card">
-      <div className="stat-icon">{icon}</div>
-      <div><span>{label}</span><strong>{value}</strong>{detail && <small>{detail}</small>}</div>
-    </div>
-  );
+function GoalCard({goal}:{goal:Goal}){const progress=Math.round(calculateProgress(goal));const type=GOAL_TYPES.find(t=>t.id===goal.type);return <article className="goal-card"><div className="goal-top"><div><div className="goal-type">{type?.icon} {type?.label}</div><h3>{goal.name}</h3>{goal.context&&<p className="goal-context">{goal.context}</p>}</div><span className="status">{goal.status==='completed'?'Complete':'Active'}</span></div><div className="progress-row"><strong>{progress}%</strong><span>{formatValue(goal.current,goal.unit)} / {formatValue(goal.target,goal.unit)}</span></div><div className="progress-track"><div style={{width:progress+'%'}}/></div><div className="goal-footer"><span>{daysLeft(goal.targetDate)} days remaining</span><span>{goal.description||'Update progress →'}</span></div></article>;}
+function NewGoalModal({onClose,onCreate}:{onClose:()=>void;onCreate:(goal:Goal)=>void}){
+  const [name,setName]=useState(''),[type,setType]=useState<GoalType>('personal'),[target,setTarget]=useState(''),[current,setCurrent]=useState('0'),[unit,setUnit]=useState('units'),[targetDate,setTargetDate]=useState(''),[context,setContext]=useState(''),[description,setDescription]=useState(''),[error,setError]=useState('');
+  const selected=useMemo(()=>GOAL_TYPES.find(t=>t.id===type)!,[type]);
+  const submit=(event:FormEvent)=>{event.preventDefault();const t=Number(target),c=Number(current);if(!name.trim()||!targetDate||!Number.isFinite(t)||t<=0||!Number.isFinite(c)||c<0){setError('Add a name, target date, and valid progress values to create the goal.');return;}if(c>t){setError('Current progress cannot be greater than the target.');return;}onCreate({id:crypto.randomUUID(),name:name.trim(),type,description:description.trim(),startDate:today(),targetDate,target:t,current:c,unit:unit.trim()||selected.unitPlaceholder,context:context.trim(),notes:'',status:'active',createdAt:new Date().toISOString()});};
+  return <div className="modal-backdrop" onMouseDown={e=>e.target===e.currentTarget&&onClose()}><form className="modal" onSubmit={submit}><div className="modal-head"><div><p className="eyebrow">NEW GOAL</p><h2>Put something in TheBox.</h2></div><button type="button" className="icon-button" onClick={onClose}><X size={18}/></button></div><div className="form-grid">
+    <label>Goal name<input autoFocus value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Save $5,000"/></label><label>Goal type<select value={type} onChange={e=>{const n=e.target.value as GoalType;setType(n);setUnit(GOAL_TYPES.find(t=>t.id===n)!.unitPlaceholder);}}>{GOAL_TYPES.map(t=><option key={t.id} value={t.id}>{t.icon} {t.label}</option>)}</select></label>
+    <label>Target<input type="number" min="0" step="any" value={target} onChange={e=>setTarget(e.target.value)} placeholder="5000"/></label><label>Current progress<input type="number" min="0" step="any" value={current} onChange={e=>setCurrent(e.target.value)}/></label>
+    <label>Unit<input value={unit} onChange={e=>setUnit(e.target.value)} placeholder={selected.unitPlaceholder}/></label><label>Target date<input type="date" min={today()} value={targetDate} onChange={e=>setTargetDate(e.target.value)}/></label>
+    <label className="full">Organization / context<input value={context} onChange={e=>setContext(e.target.value)} placeholder="e.g. Capital One, Python course, marathon"/></label><label className="full">Description<textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="What does success look like?" rows={3}/></label>
+  </div>{error&&<p className="form-error">{error}</p>}<div className="modal-actions"><button type="button" className="secondary-button" onClick={onClose}>Cancel</button><button className="primary-button" type="submit"><Plus size={17}/> Create goal</button></div></form></div>;
 }
+function Stat({icon,label,value,detail}:{icon:React.ReactNode;label:string;value:string;detail?:string}){return <div className="stat-card"><div className="stat-icon">{icon}</div><div><span>{label}</span><strong>{value}</strong>{detail&&<small>{detail}</small>}</div></div>;}
+function daysLeft(date:string){return Math.max(0,Math.ceil((new Date(date).getTime()-Date.now())/86400000));}
+function formatValue(value:number,unit:string){return unit==='$'?'$'+value.toLocaleString():value.toLocaleString()+' '+unit;}
