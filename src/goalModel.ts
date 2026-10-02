@@ -7,6 +7,7 @@ export type GoalType =
   | 'learning'
   | 'career'
   | 'personal'
+  | 'relocation'
   | 'custom';
 
 export type GoalStatus = 'active' | 'completed' | 'paused';
