@@ -12,5 +12,5 @@ export const GOAL_TYPES: GoalTypeDefinition[] = [
   { id:'personal',label:'Personal',icon:'🏠',description:'A meaningful goal that does not fit another category.',unitPlaceholder:'steps' },
   { id:'custom',label:'Custom',icon:'🔢',description:'Define your own target and unit.',unitPlaceholder:'units' },
 ];
-export interface Goal { id:string; name:string; type:GoalType; description:string; startDate:string; targetDate:string; target:number; current:number; unit:string; context:string; notes:string; status:GoalStatus; createdAt:string; }
+export interface GoalHistory { id:string; goalId:string; previous:number; current:number; change:number; note:string; createdAt:string; }\nexport interface Goal { id:string; name:string; type:GoalType; description:string; startDate:string; targetDate:string; target:number; current:number; unit:string; context:string; notes:string; status:GoalStatus; createdAt:string; history:GoalHistory[]; }
 export const calculateProgress = (goal:Pick<Goal,'current'|'target'>) => goal.target <= 0 ? 0 : Math.min(100,Math.max(0,(goal.current/goal.target)*100));
