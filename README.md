@@ -2,40 +2,33 @@
 
 > Everything you want to accomplish. One place.
 
-TheBox is a universal goal-tracking platform designed to turn ambitions into measurable progress, milestones, and wins.
+TheBox is a universal goal-tracking platform that turns ambitions into measurable progress, milestones, timelines, and wins.
 
-## Vision
+## Current features
 
-TheBox treats every goal as a structured journey. Financial goals, debt payoff, education, fitness, learning, career, and personal goals share one flexible progress engine while still supporting specialized fields where they matter.
-
-## Current milestone
-
-**Phase 1 — Product foundation**
-- React + TypeScript + Vite
-- Responsive visual system
-- Dashboard shell
-- Goal-card foundation
-- Initial design language
-
-## Next
-
-1. Add goal creation flow
-2. Add typed goal data model
-3. Add persistent local storage
-4. Add progress updates and history
-5. Add smart projections and milestone logic
-6. Add calendar and wins
-7. Add testing and deployment
+- React + TypeScript + Vite foundation
+- Universal goal types: financial, debt, savings, education, fitness, learning, career, personal, and custom
+- Dynamic goal creation with specialized debt fields
+- Persistent browser storage with backwards-compatible normalization
+- Progress updates with timestamped history and notes
+- Automatic completion detection and completion dates
+- Goal health: on track, at risk, behind, complete
+- Required pace and projected finish calculations
+- 25/50/75/100% milestones with calendar-aware dates
+- In-app calendar for deadlines and milestones
+- Goal detail workspace
+- Specialized debt payoff panel with APR, minimum payment, monthly payment, and payoff estimate
+- Wins / completed-goals history
+- Goal search and active/completed filtering
+- JSON data export
+- Responsive dark UI
 
 ## Development
 
 ```bash
 npm install
 npm run dev
-```
-
-Build check:
-
-```bash
 npm run build
 ```
+
+The application currently stores goal data in localStorage, keeping the prototype simple and usable without a backend.
