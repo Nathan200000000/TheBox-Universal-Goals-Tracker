@@ -41,6 +41,10 @@ export interface DebtDetails {
   dueDay?: number;
 }
 
+export interface RelocationTask { id: string; title: string; done: boolean; }
+
+export interface RelocationDetails { destination: string; moveMethod: string; housingPlan: string; estimatedRent: number; movingCost: number; travelCost: number; depositCost: number; tasks: RelocationTask[]; }
+
 export interface GoalMilestone {
   id: string;
   title: string;
@@ -77,6 +81,7 @@ export interface Goal {
   history: GoalHistory[];
   milestones: GoalMilestone[];
   debt?: DebtDetails;
+  relocation?: RelocationDetails;
 }
 
 export const calculateProgress = (
