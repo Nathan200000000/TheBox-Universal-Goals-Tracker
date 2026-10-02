@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { Target, Plus, ArrowUpRight, CircleCheck, Clock3, Flame, X, History, TrendingUp } from 'lucide-react';
 import { GOAL_TYPES, calculateProgress, getGoalHealth, getProjectedDate, getRequiredDailyPace, getMilestoneDate } from './goalModel';
 import type { Goal, GoalType } from './goalModel';
+import { RelocationPlanner } from './RelocationPlanner';
 
 const STORAGE_KEY = 'thebox.goals.v1';
 const makeMilestones=(startDate:string,targetDate:string,current:number,target:number)=>[25,50,75,100].map(percent=>({id:crypto.randomUUID(),title:percent+'% milestone',percent,targetDate:getMilestoneDate({startDate,targetDate},percent),reachedAt:calculateProgress({current,target})>=percent?'2026-01-01T00:00:00.000Z':undefined}));
@@ -17,7 +18,7 @@ const today = () => new Date().toISOString().slice(0,10);
 export function App() {
   const [goals,setGoalsState]=useState<Goal[]>(()=>{try{const saved=localStorage.getItem(STORAGE_KEY);const raw=saved?JSON.parse(saved):initialGoals;return raw.map((g:Goal)=>({...g,history:g.history??[],milestones:g.milestones??makeMilestones(g.startDate,g.targetDate,g.current,g.target)}));}catch{return initialGoals;}});
   const setGoals=(next:Goal[]|((g:Goal[])=>Goal[]))=>setGoalsState(next);
-  const [showNewGoal,setShowNewGoal]=useState(false),[showCalendar,setShowCalendar]=useState(false),[selected,setSelected]=useState<Goal|null>(null),[detail,setDetail]=useState<Goal|null>(null),[query,setQuery]=useState(''),[filter,setFilter]=useState<'all'|'active'|'completed'>('all');
+  const [showNewGoal,setShowNewGoal]=useState(false),[showCalendar,setShowCalendar]=useState(false),[showRelocation,setShowRelocation]=useState(false),[selected,setSelected]=useState<Goal|null>(null),[detail,setDetail]=useState<Goal|null>(null),[query,setQuery]=useState(''),[filter,setFilter]=useState<'all'|'active'|'completed'>('all');
   useEffect(()=>localStorage.setItem(STORAGE_KEY,JSON.stringify(goals)),[goals]);
   const updateProgress=(goal:Goal,value:number,note:string)=>{setGoals(current=>current.map(g=>{if(g.id!==goal.id)return g;const complete=value>=g.target;return {...g,current:value,status:complete?'completed':'active',completedAt:complete?(g.completedAt||new Date().toISOString()):undefined,history:[{id:crypto.randomUUID(),goalId:g.id,previous:g.current,current:value,change:value-g.current,note,createdAt:new Date().toISOString()},...g.history],milestones:g.milestones.map(m=>({...m,reachedAt:m.reachedAt||(value/g.target*100>=m.percent?new Date().toISOString():undefined)}))};}));setSelected(null);setDetail(null);};
   const filtered=goals.filter(g=>(filter==='all'||(filter==='active'?g.status!=='completed':g.status==='completed'))&&(g.name+' '+g.context+' '+g.type).toLowerCase().includes(query.toLowerCase()));
