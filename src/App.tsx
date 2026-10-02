@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Target, Plus, ArrowUpRight, CircleCheck, Clock3, Flame, X, History, TrendingUp } from 'lucide-react';
-import { GOAL_TYPES, Goal, GoalHistory, GoalType, calculateProgress } from './goalModel';
+import { GOAL_TYPES, Goal, GoalHistory, GoalType, calculateProgress, getGoalHealth, getProjectedDate, getRequiredDailyPace } from './goalModel';
 
 const STORAGE_KEY = 'thebox.goals.v1';
 const initialGoals: Goal[] = [
@@ -32,7 +32,7 @@ export function App() {
     {showNewGoal && <NewGoalModal onClose={()=>setShowNewGoal(false)} onCreate={goal=>{setGoals(current=>[goal,...current]);setShowNewGoal(false);}}/>}
   </div>;
 }
-function GoalCard({goal,onUpdate}:{goal:Goal;onUpdate:()=>void}){const progress=Math.round(calculateProgress(goal));const type=GOAL_TYPES.find(t=>t.id===goal.type);return <article className="goal-card"><div className="goal-top"><div><div className="goal-type">{type?.icon} {type?.label}</div><h3>{goal.name}</h3>{goal.context&&<p className="goal-context">{goal.context}</p>}</div><span className="status">{goal.status==='completed'?'Complete':'Active'}</span></div><div className="progress-row"><strong>{progress}%</strong><span>{formatValue(goal.current,goal.unit)} / {formatValue(goal.target,goal.unit)}</span></div><div className="progress-track"><div style={{width:progress+'%'}}/></div><div className="goal-footer"><span>{daysLeft(goal.targetDate)} days remaining</span><button className="text-button" onClick={onUpdate}><TrendingUp size={13}/> Update progress</button></div></article>;}
+function GoalCard({goal,onUpdate}:{goal:Goal;onUpdate:()=>void}){const progress=Math.round(calculateProgress(goal));const type=GOAL_TYPES.find(t=>t.id===goal.type);const health=getGoalHealth(goal);const projected=getProjectedDate(goal);const pace=getRequiredDailyPace(goal);return <article className="goal-card"><div className="goal-top"><div><div className="goal-type">{type?.icon} {type?.label}</div><h3>{goal.name}</h3>{goal.context&&<p className="goal-context">{goal.context}</p>}</div><span className={`status status-${health}`}>{healthLabel(health)}</span></div><div className="progress-row"><strong>{progress}%</strong><span>{formatValue(goal.current,goal.unit)} / {formatValue(goal.target,goal.unit)}</span></div><div className="progress-track"><div style={{width:progress+'%'}}/></div><div className="goal-insight">{health!=='complete'&&<><span>Need {formatValue(pace??0,goal.unit)} / day</span>{projected&&<span>Projected {formatDate(projected)}</span>}</>}{health==='complete'&&<span>Goal complete</span>}</div><div className="goal-footer"><span>{daysLeft(goal.targetDate)} days remaining</span><button className="text-button" onClick={onUpdate}><TrendingUp size={13}/> Update progress</button></div></article>;}
 function NewGoalModal({onClose,onCreate}:{onClose:()=>void;onCreate:(goal:Goal)=>void}){
   const [name,setName]=useState(''),[type,setType]=useState<GoalType>('personal'),[target,setTarget]=useState(''),[current,setCurrent]=useState('0'),[unit,setUnit]=useState('units'),[targetDate,setTargetDate]=useState(''),[context,setContext]=useState(''),[description,setDescription]=useState(''),[error,setError]=useState('');
   const selected=useMemo(()=>GOAL_TYPES.find(t=>t.id===type)!,[type]);
@@ -45,6 +45,8 @@ function NewGoalModal({onClose,onCreate}:{onClose:()=>void;onCreate:(goal:Goal)=
   </div>{error&&<p className="form-error">{error}</p>}<div className="modal-actions"><button type="button" className="secondary-button" onClick={onClose}>Cancel</button><button className="primary-button" type="submit"><Plus size={17}/> Create goal</button></div></form></div>;
 }
 function Stat({icon,label,value,detail}:{icon:React.ReactNode;label:string;value:string;detail?:string}){return <div className="stat-card"><div className="stat-icon">{icon}</div><div><span>{label}</span><strong>{value}</strong>{detail&&<small>{detail}</small>}</div></div>;}
+function healthLabel(h:ReturnType<typeof getGoalHealth>){return h==='complete'?'Complete':h==='on-track'?'On track':h==='at-risk'?'At risk':'Behind';}
+function formatDate(date:string){return new Date(date+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});}
 function daysLeft(date:string){return Math.max(0,Math.ceil((new Date(date).getTime()-Date.now())/86400000));}
 function formatValue(value:number,unit:string){return unit==='$'?'$'+value.toLocaleString():value.toLocaleString()+' '+unit;}
 
