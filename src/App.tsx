@@ -13,9 +13,13 @@ const initialGoals: Goal[] = [
 const today = () => new Date().toISOString().slice(0,10);
 
 export function App() {
-  const [goals,setGoals] = useState<Goal[]>(() => { const saved=localStorage.getItem(STORAGE_KEY); return saved ? JSON.parse(saved) : initialGoals; });
-  const [showNewGoal,setShowNewGoal] = useState(false);
-  useEffect(() => localStorage.setItem(STORAGE_KEY,JSON.stringify(goals)),[goals]);
+  const [goals,setGoalsState]=useState<Goal[]>(()=>{try{const saved=localStorage.getItem(STORAGE_KEY);const raw=saved?JSON.parse(saved):initialGoals;return raw.map((g:Goal)=>({...g,history:g.history??[],milestones:g.milestones??makeMilestones(g.startDate,g.targetDate,g.current,g.target)}));}catch{return initialGoals;}});
+  const setGoals=(next:Goal[]|((g:Goal[])=>Goal[]))=>setGoalsState(next);
+  const [showNewGoal,setShowNewGoal]=useState(false),[showCalendar,setShowCalendar]=useState(false),[selected,setSelected]=useState<Goal|null>(null),[detail,setDetail]=useState<Goal|null>(null),[query,setQuery]=useState(''),[filter,setFilter]=useState<'all'|'active'|'completed'>('all');
+  useEffect(()=>localStorage.setItem(STORAGE_KEY,JSON.stringify(goals)),[goals]);
+  const updateProgress=(goal:Goal,value:number,note:string)=>{setGoals(current=>current.map(g=>{if(g.id!==goal.id)return g;const complete=value>=g.target;return {...g,current:value,status:complete?'completed':'active',completedAt:complete?(g.completedAt||new Date().toISOString()):undefined,history:[{id:crypto.randomUUID(),goalId:g.id,previous:g.current,current:value,change:value-g.current,note,createdAt:new Date().toISOString()},...g.history],milestones:g.milestones.map(m=>({...m,reachedAt:m.reachedAt||(value/g.target*100>=m.percent?new Date().toISOString():undefined)}))};}));setSelected(null);setDetail(null);};
+  const filtered=goals.filter(g=>(filter==='all'||(filter==='active'?g.status!=='completed':g.status==='completed'))&&(g.name+' '+g.context+' '+g.type).toLowerCase().includes(query.toLowerCase()));
+  const exportData=()=>{const blob=new Blob([JSON.stringify(goals,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='thebox-goals.json';link.click();URL.revokeObjectURL(url);};
   const active=goals.filter(g=>g.status==='active'), completed=goals.filter(g=>g.status==='completed');
   const nextGoal=[...active].sort((a,b)=>a.targetDate.localeCompare(b.targetDate))[0];
   const onTrack=active.filter(g=>calculateProgress(g)>=50).length;
