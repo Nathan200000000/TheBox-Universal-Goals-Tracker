@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, MapPin, Check, Plus } from 'lucide-react';
 import type { Goal } from './goalModel';
 
-export function RelocationPlanner({ onClose, onCreate }: { onClose: () => void; onCreate: (goal: Goal) => void }) {
+export function RelocationPlanner({ onClose, onCreate }: { onClose: () => void; onCreate: (update: (goals: Goal[]) => Goal[]) => void }) {
   const [name,setName]=useState('Move To California');
   const [destination,setDestination]=useState('California');
   const [targetDate,setTargetDate]=useState('');
@@ -16,7 +16,7 @@ export function RelocationPlanner({ onClose, onCreate }: { onClose: () => void; 
   const [tasks,setTasks]=useState(['Research cities and neighborhoods','Set moving budget','Build $2,000 move fund','Choose a move method','Research housing','Price transportation','Declutter and sell or donate','Gather packing supplies','Set a target move date','Handle address and utilities','Pack essentials','Final walkthrough']);
   const [done,setDone]=useState<string[]>([]);
   const toggle=(task:string)=>setDone(v=>v.includes(task)?v.filter(x=>x!==task):[...v,task]);
-  const create=()=>{if(!targetDate||!destination.trim())return;const now=new Date().toISOString();onCreate({id:crypto.randomUUID(),name:name.trim()||'Move To California',type:'relocation',description:description.trim(),startDate:now.slice(0,10),targetDate,target:2000,current:0,unit:'$',context:destination.trim(),notes:'',status:'active',createdAt:now,history:[],milestones:[25,50,75,100].map(percent=>({id:crypto.randomUUID(),title:percent+'% milestone',percent,targetDate:targetDate})),relocation:{destination:destination.trim(),moveMethod,housingPlan:housing,estimatedRent:Number(rent)||0,movingCost:Number(moving)||0,travelCost:Number(travel)||0,depositCost:Number(deposit)||0,tasks:tasks.map(title=>({id:crypto.randomUUID(),title,done:done.includes(title)}))}});};
+  const create=()=>{if(!targetDate||!destination.trim())return;const now=new Date().toISOString();const goal={id:crypto.randomUUID(),name:name.trim()||'Move To California',type:'relocation',description:description.trim(),startDate:now.slice(0,10),targetDate,target:2000,current:0,unit:'$',context:destination.trim(),notes:'',status:'active',createdAt:now,history:[],milestones:[25,50,75,100].map(percent=>({id:crypto.randomUUID(),title:percent+'% milestone',percent,targetDate:targetDate})),relocation:{destination:destination.trim(),moveMethod,housingPlan:housing,estimatedRent:Number(rent)||0,movingCost:Number(moving)||0,travelCost:Number(travel)||0,depositCost:Number(deposit)||0,tasks:tasks.map(title=>({id:crypto.randomUUID(),title,done:done.includes(title)}))}};onCreate(goals=>[goal,...goals]);onClose();};
   return <div className="modal-backdrop"><div className="modal relocation-modal"><div className="modal-head"><div><p className="eyebrow">MOVE / RELOCATION</p><h2>Build your move plan.</h2><p className="calendar-sub">A dedicated space for the money, logistics, housing, and checklist behind the move.</p></div><button className="icon-button" onClick={onClose}><X size={18}/></button></div>
     <div className="relocation-hero"><MapPin size={18}/><div><strong>Save $2,000 to get there.</strong><span>Update the goal later from your normal progress screen.</span></div></div>
     <div className="form-grid">
