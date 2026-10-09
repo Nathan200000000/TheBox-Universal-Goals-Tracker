@@ -1,8 +1,8 @@
-# TheBox — Universal Goals Tracker
+# TheBox — Your 2026 Momentum System
 
-> Everything you want to accomplish. One place.
+> Turn this year into a series of small, visible wins.
 
-TheBox is a universal goal-tracking platform that turns ambitions into measurable progress, milestones, timelines, and wins.
+TheBox is a local-first goal workspace for turning ambitious plans into measurable missions, steady check-ins, and momentum you can see.
 
 ## Current features
 
@@ -20,8 +20,12 @@ TheBox is a universal goal-tracking platform that turns ambitions into measurabl
 - Specialized debt payoff panel with APR, minimum payment, monthly payment, and payoff estimate
 - Wins / completed-goals history
 - Goal search and active/completed filtering
-- JSON data export
-- Responsive dark UI
+- Keyboard quick switcher with `⌘K` / `Ctrl+K` navigation
+- 2026 Momentum dashboard with a daily focus mission and one-click check-in
+- XP, builder levels, and activity streaks earned from real progress updates
+- Seven-day consistency chart and a field signal for goals that need attention
+- JSON backup export and validated import with replacement confirmation
+- Responsive dark UI with a fresh, green-accented dashboard
 
 ## Development
 
@@ -31,4 +35,4 @@ npm run dev
 npm run build
 ```
 
-The application currently stores goal data in localStorage, keeping the prototype simple and usable without a backend.
+The application stores goal data in browser `localStorage`, so it works without an account or backend. Data stays in that browser; use the backup export/import to move it between devices.
